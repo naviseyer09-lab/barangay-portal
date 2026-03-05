@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "build": "vite build"
+    "build": "chmod +x node_modules/.bin/vite && vite build",
+    "postinstall": "chmod +x node_modules/.bin/vite"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",

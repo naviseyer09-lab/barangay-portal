@@ -20,3 +20,9 @@ export function removeAuthToken(): void {
   localStorage.removeItem('authToken');
   localStorage.removeItem('authUser');
 }
+
+export function isAuthenticated(): boolean {
+  return !!getAuthToken();
+}
+
+export const clearAuth = removeAuthToken;
