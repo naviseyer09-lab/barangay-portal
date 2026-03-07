@@ -99,8 +99,8 @@ export default function AdminRegister() {
         password: formData.password,
       });
 
-      toast.success("Registration submitted successfully!", {
-        description: "Your account is pending approval from the barangay administrator.",
+      toast.success("Registration successful!", {
+        description: "Your account has been approved and you can now log in.",
       });
       navigate("/admin/login");
     } catch (err: any) {

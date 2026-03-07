@@ -18,7 +18,7 @@ interface StaffRegistration {
 
 export default function StaffApproval() {
   const [registrations, setRegistrations] = useState<StaffRegistration[]>([]);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   useEffect(() => {
     loadRegistrations();

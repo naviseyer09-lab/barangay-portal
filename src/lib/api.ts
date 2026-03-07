@@ -5,6 +5,36 @@ import { getAuthToken } from './auth';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
+// Initialize default admin account if none exists
+export function initializeAdminAccounts() {
+  const adminsStr = localStorage.getItem('barangay_admin_accounts');
+  let admins = adminsStr ? JSON.parse(adminsStr) : [];
+
+  // Check if any approved admin exists
+  const hasApprovedAdmin = admins.some((admin: any) => admin.status === 'approved');
+
+  if (!hasApprovedAdmin) {
+    // Create default admin account
+    const defaultAdmin = {
+      id: generateId(),
+      firstName: 'Admin',
+      lastName: 'User',
+      email: 'admin@barangay.com',
+      phone: '09123456789',
+      position: 'Barangay Administrator',
+      employeeId: 'ADMIN001',
+      username: 'admin',
+      password: 'admin123',
+      role: 'Super Admin',
+      status: 'approved',
+      createdAt: new Date().toISOString()
+    };
+
+    admins.push(defaultAdmin);
+    localStorage.setItem('barangay_admin_accounts', JSON.stringify(admins));
+  }
+}
+
 export async function loginAdmin(username: string, password: string) {
   try {
     // In production, this would be a real API call
@@ -90,12 +120,12 @@ export async function registerAdmin(data: {
       throw new Error('Employee ID already exists');
     }
 
-    // Create new admin with pending status
+    // Create new admin with approved status
     const newAdmin = {
       id: generateId(),
       ...data,
       role: 'Staff',
-      status: 'pending', // pending, approved, rejected
+      status: 'approved', // Auto-approve new registrations
       createdAt: new Date().toISOString()
     };
 
@@ -104,7 +134,7 @@ export async function registerAdmin(data: {
 
     return {
       success: true,
-      message: 'Registration submitted successfully. Your account is pending approval.'
+      message: 'Registration successful! Your account has been approved and you can now log in.'
     };
   } catch (error) {
     throw error;
