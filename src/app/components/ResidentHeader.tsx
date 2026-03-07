@@ -1,12 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import { Building2, Bell, Menu, User, Lock, LogOut } from "lucide-react";
-import { mockUser } from "../data/mockData";
 import { useNavigate } from "react-router";
+import { getAuthUser, clearAuth } from "../../lib/auth";
 
 export default function ResidentHeader() {
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [user, setUser] = useState(getAuthUser());
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const currentUser = getAuthUser();
+    setUser(currentUser);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -20,7 +26,8 @@ export default function ResidentHeader() {
   }, []);
 
   const handleLogout = () => {
-    navigate("/");
+    clearAuth();
+    navigate("/resident/login", { replace: true });
   };
 
   const handleChangePassword = () => {
@@ -59,7 +66,7 @@ export default function ResidentHeader() {
             </button>
 
             {/* Username */}
-            <span className="hidden sm:block text-gray-700">{mockUser.username}</span>
+            <span className="hidden sm:block text-gray-700">{user?.username || "User"}</span>
 
             {/* Profile Icon with Dropdown */}
             <div className="relative" ref={menuRef}>

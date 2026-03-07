@@ -1,22 +1,52 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { isAuthenticated } from "../../lib/auth";
+import { isAuthenticated, getUserType } from "../../lib/auth";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiredUserType?: 'admin' | 'resident';
 }
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, requiredUserType }: ProtectedRouteProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      navigate("/admin/login", { replace: true });
+      // Redirect based on required user type
+      if (requiredUserType === 'admin') {
+        navigate("/admin/login", { replace: true });
+      } else if (requiredUserType === 'resident') {
+        navigate("/resident/login", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+      return;
     }
-  }, [navigate]);
+
+    // Check if user has the required type
+    if (requiredUserType) {
+      const userType = getUserType();
+      if (userType !== requiredUserType) {
+        // Wrong user type, redirect to appropriate login
+        if (requiredUserType === 'admin') {
+          navigate("/admin/login", { replace: true });
+        } else if (requiredUserType === 'resident') {
+          navigate("/resident/login", { replace: true });
+        }
+      }
+    }
+  }, [navigate, requiredUserType]);
 
   if (!isAuthenticated()) {
     return null;
+  }
+
+  // Check user type
+  if (requiredUserType) {
+    const userType = getUserType();
+    if (userType !== requiredUserType) {
+      return null;
+    }
   }
 
   return <>{children}</>;

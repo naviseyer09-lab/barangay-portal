@@ -1,86 +1,43 @@
-// API service for admin authentication
-// In production, this would connect to your backend API
+// API service for barangay portal
+// Connects to the backend API
 
-import { getAuthToken } from './auth';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+// Helper function for API calls
+async function apiCall(endpoint: string, options: RequestInit = {}) {
+  const token = localStorage.getItem('authToken');
 
-// Initialize default admin account if none exists
-export function initializeAdminAccounts() {
-  const adminsStr = localStorage.getItem('barangay_admin_accounts');
-  let admins = adminsStr ? JSON.parse(adminsStr) : [];
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` }),
+    ...options.headers,
+  };
 
-  // Check if any approved admin exists
-  const hasApprovedAdmin = admins.some((admin: any) => admin.status === 'approved');
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
 
-  if (!hasApprovedAdmin) {
-    // Create default admin account
-    const defaultAdmin = {
-      id: generateId(),
-      firstName: 'Admin',
-      lastName: 'User',
-      email: 'admin@barangay.com',
-      phone: '09123456789',
-      position: 'Barangay Administrator',
-      employeeId: 'ADMIN001',
-      username: 'admin',
-      password: 'admin123',
-      role: 'Super Admin',
-      status: 'approved',
-      createdAt: new Date().toISOString()
-    };
+  const data = await response.json();
 
-    admins.push(defaultAdmin);
-    localStorage.setItem('barangay_admin_accounts', JSON.stringify(admins));
+  if (!response.ok) {
+    throw new Error(data.message || `API call failed: ${response.statusText}`);
   }
+
+  return data;
 }
 
+// Admin Authentication Functions
 export async function loginAdmin(username: string, password: string) {
   try {
-    // In production, this would be a real API call
-    // For now, we'll simulate an API call with stored credentials
-
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    // Get stored admin accounts from localStorage
-    const adminsStr = localStorage.getItem('barangay_admin_accounts');
-    const admins = adminsStr ? JSON.parse(adminsStr) : [];
-
-    // Find matching admin
-    const admin = admins.find((a: any) => a.username === username);
-
-    if (!admin) {
-      throw new Error('Invalid username or password');
-    }
-
-    // Check if admin account is approved
-    if (admin.status === 'pending') {
-      throw new Error('Your account is pending approval. Please contact the barangay administrator.');
-    }
-
-    if (admin.status === 'rejected') {
-      throw new Error('Your account has been rejected. Please contact the barangay administrator.');
-    }
-
-    // Verify password (in production, this would be hashed)
-    if (admin.password !== password) {
-      throw new Error('Invalid username or password');
-    }
-
-    // Generate a session token
-    const token = generateToken();
+    const response = await apiCall('/auth/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
 
     return {
-      token,
-      user: {
-        id: admin.id,
-        username: admin.username,
-        email: admin.email,
-        firstName: admin.firstName,
-        lastName: admin.lastName,
-        role: admin.role || 'Admin'
-      }
+      token: response.token,
+      user: response.user
     };
   } catch (error) {
     throw error;
@@ -98,87 +55,239 @@ export async function registerAdmin(data: {
   employeeId: string;
 }) {
   try {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    const response = await apiCall('/auth/admin/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
 
-    // Get existing admins
-    const adminsStr = localStorage.getItem('barangay_admin_accounts');
-    const admins = adminsStr ? JSON.parse(adminsStr) : [];
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
 
-    // Check if username already exists
-    if (admins.some((a: any) => a.username === data.username)) {
-      throw new Error('Username already exists');
-    }
-
-    // Check if email already exists
-    if (admins.some((a: any) => a.email === data.email)) {
-      throw new Error('Email already exists');
-    }
-
-    // Check if employee ID already exists
-    if (admins.some((a: any) => a.employeeId === data.employeeId)) {
-      throw new Error('Employee ID already exists');
-    }
-
-    // Create new admin with approved status
-    const newAdmin = {
-      id: generateId(),
-      ...data,
-      role: 'Staff',
-      status: 'approved', // Auto-approve new registrations
-      createdAt: new Date().toISOString()
-    };
-
-    admins.push(newAdmin);
-    localStorage.setItem('barangay_admin_accounts', JSON.stringify(admins));
+// Resident Authentication Functions
+export async function loginResident(username: string, password: string) {
+  try {
+    const response = await apiCall('/auth/resident/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
 
     return {
-      success: true,
-      message: 'Registration successful! Your account has been approved and you can now log in.'
+      token: response.token,
+      user: response.user
     };
   } catch (error) {
     throw error;
   }
 }
 
-export async function verifyToken(token: string) {
+export async function registerResident(data: {
+  username: string;
+  password: string;
+  fullName: string;
+  email: string;
+  address: string;
+  contactNumber: string;
+  birthdate: string;
+  gender: string;
+  civilStatus: string;
+}) {
   try {
-    // Simulate token verification
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const response = await apiCall('/auth/resident/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
 
-    // In production, verify token with backend
-    return token.length > 0;
-  } catch {
-    return false;
+    return response;
+  } catch (error) {
+    throw error;
   }
 }
 
-function generateToken(): string {
-  return 'admin_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-}
+// Admin API Functions
+export async function getStaffAccounts(status?: string, page = 1, limit = 10) {
+  try {
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
 
-function generateId(): string {
-  return 'admin_' + Date.now().toString(36) + Math.random().toString(36).substring(2);
-}
-
-// API call wrapper with authentication
-export async function apiCall(endpoint: string, options: RequestInit = {}) {
-  const token = getAuthToken();
-
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Bearer ${token}` }),
-    ...options.headers,
-  };
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    throw new Error(`API call failed: ${response.statusText}`);
+    return await apiCall(`/admin/staff?${params}`);
+  } catch (error) {
+    throw error;
   }
+}
 
-  return response.json();
+export async function approveStaffAccount(id: string) {
+  try {
+    return await apiCall(`/admin/staff/${id}/approve`, {
+      method: 'PUT',
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function rejectStaffAccount(id: string) {
+  try {
+    return await apiCall(`/admin/staff/${id}/reject`, {
+      method: 'PUT',
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getResidents(page = 1, limit = 10, search?: string) {
+  try {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+    if (search) params.append('search', search);
+
+    return await apiCall(`/admin/residents?${params}`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function updateResidentStatus(id: string, status: 'Active' | 'Inactive') {
+  try {
+    return await apiCall(`/admin/residents/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getServiceRequests(status?: string, page = 1, limit = 10) {
+  try {
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+
+    return await apiCall(`/admin/service-requests?${params}`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function updateServiceRequest(id: string, status: string, remarks?: string) {
+  try {
+    return await apiCall(`/admin/service-requests/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, remarks }),
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Resident API Functions
+export async function getResidentProfile() {
+  try {
+    return await apiCall('/resident/profile');
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function updateResidentProfile(data: any) {
+  try {
+    return await apiCall('/resident/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getResidentServiceRequests(page = 1, limit = 10) {
+  try {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+
+    return await apiCall(`/resident/service-requests?${params}`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function createServiceRequest(serviceName: string, purpose: string) {
+  try {
+    return await apiCall('/resident/service-requests', {
+      method: 'POST',
+      body: JSON.stringify({ serviceName, purpose }),
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getAvailableServices() {
+  try {
+    return await apiCall('/resident/services');
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getAnnouncements(page = 1, limit = 10) {
+  try {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+
+    return await apiCall(`/resident/announcements?${params}`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Services API Functions (Admin)
+export async function getServices() {
+  try {
+    return await apiCall('/services');
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function createService(data: any) {
+  try {
+    return await apiCall('/services', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function updateService(id: string, data: any) {
+  try {
+    return await apiCall(`/services/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function deleteService(id: string) {
+  try {
+    return await apiCall(`/services/${id}`, {
+      method: 'DELETE',
+    });
+  } catch (error) {
+    throw error;
+  }
 }

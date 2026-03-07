@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Check, X, UserCheck, Clock, UserX, Mail, Phone, Briefcase, IdCard } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { toast } from "sonner";
+import { getStaffAccounts, approveStaffAccount, rejectStaffAccount } from "../../lib/api";
 
 interface StaffRegistration {
   id: string;
@@ -19,55 +20,66 @@ interface StaffRegistration {
 export default function StaffApproval() {
   const [registrations, setRegistrations] = useState<StaffRegistration[]>([]);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadRegistrations();
   }, []);
 
-  const loadRegistrations = () => {
-    const adminsStr = localStorage.getItem('barangay_admin_accounts');
-    const admins = adminsStr ? JSON.parse(adminsStr) : [];
-    setRegistrations(admins);
+  const loadRegistrations = async () => {
+    try {
+      setLoading(true);
+      const response = await getStaffAccounts();
+      // Map database fields (snake_case) to component interface (camelCase)
+      const staffList = (response.staff || []).map((admin: any) => ({
+        id: admin.id,
+        firstName: admin.first_name,
+        lastName: admin.last_name,
+        email: admin.email,
+        phone: admin.phone,
+        position: admin.position,
+        employeeId: admin.employee_id,
+        username: admin.username,
+        status: admin.status,
+        createdAt: admin.created_at
+      }));
+      setRegistrations(staffList);
+    } catch (error) {
+      console.error('Error loading staff registrations:', error);
+      toast.error("Failed to load staff registrations");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleApprove = (id: string) => {
-    const adminsStr = localStorage.getItem('barangay_admin_accounts');
-    const admins = adminsStr ? JSON.parse(adminsStr) : [];
+  const handleApprove = async (id: string) => {
+    try {
+      await approveStaffAccount(id);
+      await loadRegistrations();
 
-    const updatedAdmins = admins.map((admin: any) => {
-      if (admin.id === id) {
-        return { ...admin, status: 'approved' };
-      }
-      return admin;
-    });
-
-    localStorage.setItem('barangay_admin_accounts', JSON.stringify(updatedAdmins));
-    loadRegistrations();
-
-    const approvedAdmin = admins.find((a: any) => a.id === id);
-    toast.success("Staff account approved", {
-      description: `${approvedAdmin.firstName} ${approvedAdmin.lastName} can now access the system.`,
-    });
+      const approvedAdmin = registrations.find(r => r.id === id);
+      toast.success("Staff account approved", {
+        description: `${approvedAdmin?.firstName} ${approvedAdmin?.lastName} can now access the system.`,
+      });
+    } catch (error) {
+      console.error('Error approving staff:', error);
+      toast.error("Failed to approve staff account");
+    }
   };
 
-  const handleReject = (id: string) => {
-    const adminsStr = localStorage.getItem('barangay_admin_accounts');
-    const admins = adminsStr ? JSON.parse(adminsStr) : [];
+  const handleReject = async (id: string) => {
+    try {
+      await rejectStaffAccount(id);
+      await loadRegistrations();
 
-    const updatedAdmins = admins.map((admin: any) => {
-      if (admin.id === id) {
-        return { ...admin, status: 'rejected' };
-      }
-      return admin;
-    });
-
-    localStorage.setItem('barangay_admin_accounts', JSON.stringify(updatedAdmins));
-    loadRegistrations();
-
-    const rejectedAdmin = admins.find((a: any) => a.id === id);
-    toast.info("Staff account rejected", {
-      description: `${rejectedAdmin.firstName} ${rejectedAdmin.lastName}'s registration has been rejected.`,
-    });
+      const rejectedAdmin = registrations.find(r => r.id === id);
+      toast.info("Staff account rejected", {
+        description: `${rejectedAdmin?.firstName} ${rejectedAdmin?.lastName}'s registration has been rejected.`,
+      });
+    } catch (error) {
+      console.error('Error rejecting staff:', error);
+      toast.error("Failed to reject staff account");
+    }
   };
 
   const filteredRegistrations = registrations.filter(reg => {
@@ -184,7 +196,12 @@ export default function StaffApproval() {
 
       {/* Registrations List */}
       <div className="space-y-4">
-        {filteredRegistrations.length === 0 ? (
+        {loading ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+            <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading staff registrations...</p>
+          </div>
+        ) : filteredRegistrations.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
             <UserCheck className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-600">No {filter !== 'all' ? filter : ''} registrations found</p>

@@ -46,7 +46,7 @@ export default function AdminLayout() {
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requiredUserType="admin">
       <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (

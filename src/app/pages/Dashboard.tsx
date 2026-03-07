@@ -1,7 +1,16 @@
 import { CheckCircle, Clock, XCircle, FileText } from "lucide-react";
-import { mockUser, mockRequests } from "../data/mockData";
+import { useEffect, useState } from "react";
+import { mockRequests } from "../data/mockData";
+import { getAuthUser } from "../../lib/auth";
 
 export default function Dashboard() {
+  const [user, setUser] = useState(getAuthUser());
+
+  useEffect(() => {
+    const currentUser = getAuthUser();
+    setUser(currentUser);
+  }, []);
+
   const activeRequests = mockRequests.length;
   const approved = mockRequests.filter((r) => r.status === "Approved").length;
   const pending = mockRequests.filter((r) => r.status === "Pending").length;
@@ -26,7 +35,7 @@ export default function Dashboard() {
       {/* Welcome Message */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome back, {mockUser.fullName}!
+          Welcome back, {user?.fullName || "Resident"}!
         </h1>
         <p className="text-gray-600">Here's an overview of your requests</p>
       </div>

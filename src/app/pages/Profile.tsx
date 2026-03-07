@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Edit2 } from "lucide-react";
-import { mockUser } from "../data/mockData";
+import { getAuthUser } from "../../lib/auth";
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(mockUser);
+  const [formData, setFormData] = useState<any>(null);
+
+  useEffect(() => {
+    const currentUser = getAuthUser();
+    setFormData(currentUser || {});
+  }, []);
 
   const handleSave = () => {
     // Save profile changes
     alert("Profile updated successfully!");
     setIsEditing(false);
   };
+
+  if (!formData) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -38,7 +47,7 @@ export default function Profile() {
           <div className="flex justify-center mb-8">
             <div className="relative">
               <div className="w-32 h-32 bg-gradient-to-br from-blue-600 to-green-600 rounded-full flex items-center justify-center text-white text-4xl font-bold">
-                {mockUser.fullName.charAt(0)}
+                {formData?.fullName?.charAt(0) || "U"}
               </div>
               {isEditing && (
                 <button className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-gray-200 hover:bg-gray-50">
@@ -145,7 +154,8 @@ export default function Profile() {
             <div className="flex gap-3 mt-8 pt-6 border-t border-gray-200">
               <button
                 onClick={() => {
-                  setFormData(mockUser);
+                  const currentUser = getAuthUser();
+                  setFormData(currentUser || {});
                   setIsEditing(false);
                 }}
                 className="flex-1 px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"

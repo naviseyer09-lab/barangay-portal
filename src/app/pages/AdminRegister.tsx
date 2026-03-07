@@ -88,7 +88,7 @@ export default function AdminRegister() {
     setIsLoading(true);
 
     try {
-      await registerAdmin({
+      const result = await registerAdmin({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -99,8 +99,8 @@ export default function AdminRegister() {
         password: formData.password,
       });
 
-      toast.success("Registration successful!", {
-        description: "Your account has been approved and you can now log in.",
+      toast.success("Registration completed!", {
+        description: result.message,
       });
       navigate("/admin/login");
     } catch (err: any) {
