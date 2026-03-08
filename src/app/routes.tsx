@@ -17,7 +17,6 @@ import SystemSettings from "./pages/SystemSettings";
 import AdminRegister from "./pages/AdminRegister";
 import StaffApproval from "./pages/StaffApproval";
 import ResidentLogin from "./pages/ResidentLogin";
-import ResidentRegister from "./pages/ResidentRegister";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Wrapper components for protected routes
@@ -41,10 +40,6 @@ export const router = createBrowserRouter([
   {
     path: "/resident/login",
     Component: ResidentLogin,
-  },
-  {
-    path: "/resident/register",
-    Component: ResidentRegister,
   },
   {
     path: "/resident",

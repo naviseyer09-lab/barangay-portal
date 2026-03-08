@@ -164,6 +164,27 @@ export async function updateResidentStatus(id: string, status: 'Active' | 'Inact
   }
 }
 
+export async function createResident(data: {
+  username: string;
+  password: string;
+  email: string;
+  fullName: string;
+  address: string;
+  contactNumber: string;
+  birthdate?: string;
+  gender?: string;
+  civilStatus?: string;
+}) {
+  try {
+    return await apiCall('/admin/residents/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function getServiceRequests(status?: string, page = 1, limit = 10) {
   try {
     const params = new URLSearchParams();

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { mockResidents, User } from "../data/mockData";
 import { Search, Plus, Edit, Trash2, Key, Filter, Download } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -18,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
+import { createResident, getResidents, updateResidentStatus } from "../../lib/api";
+import { toast } from "sonner";
 
 export default function ResidentManagement() {
   const [residents, setResidents] = useState<User[]>(mockResidents);
@@ -29,7 +31,8 @@ export default function ResidentManagement() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [selectedResident, setSelectedResident] = useState<User | null>(null);
-  const [formData, setFormData] = useState<Partial<User>>({});
+  const [formData, setFormData] = useState<Partial<User> & { password?: string }>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const filteredResidents = residents.filter((resident) => {
     const matchesSearch =
@@ -43,23 +46,49 @@ export default function ResidentManagement() {
     return matchesSearch && matchesStatus && matchesVoter;
   });
 
-  const handleAddResident = () => {
-    const newResident: User = {
-      id: String(residents.length + 1),
-      username: formData.username || "",
-      fullName: formData.fullName || "",
-      address: formData.address || "",
-      contactNumber: formData.contactNumber || "",
-      voterStatus: formData.voterStatus || "Not Registered",
-      accountStatus: "Active",
-      birthdate: formData.birthdate,
-      gender: formData.gender,
-      civilStatus: formData.civilStatus,
-      email: formData.email,
-    };
-    setResidents([...residents, newResident]);
-    setShowAddModal(false);
-    setFormData({});
+  const handleAddResident = async () => {
+    if (!formData.username || !formData.password || !formData.fullName || !formData.email || !formData.address || !formData.contactNumber) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await createResident({
+        username: formData.username,
+        password: formData.password,
+        email: formData.email,
+        fullName: formData.fullName,
+        address: formData.address,
+        contactNumber: formData.contactNumber,
+        birthdate: formData.birthdate,
+        gender: formData.gender,
+        civilStatus: formData.civilStatus,
+      });
+
+      const newResident: User = {
+        id: String(response.residentId),
+        username: formData.username || "",
+        fullName: formData.fullName || "",
+        address: formData.address || "",
+        contactNumber: formData.contactNumber || "",
+        voterStatus: "Not Registered",
+        accountStatus: "Active",
+        birthdate: formData.birthdate,
+        gender: formData.gender,
+        civilStatus: formData.civilStatus,
+        email: formData.email,
+      };
+
+      setResidents([...residents, newResident]);
+      toast.success(`Resident ${formData.fullName} created successfully!`);
+      setShowAddModal(false);
+      setFormData({});
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create resident");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEditResident = () => {
@@ -269,8 +298,8 @@ export default function ResidentManagement() {
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add New Resident</DialogTitle>
-            <DialogDescription>Fill in the resident information below.</DialogDescription>
+            <DialogTitle>Create New Resident Account</DialogTitle>
+            <DialogDescription>Fill in the resident information and create their login credentials.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div className="space-y-2">
@@ -292,7 +321,17 @@ export default function ResidentManagement() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="password">Password *</Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password || ""}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="Create a password (min 8 characters)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
                 type="email"
@@ -337,6 +376,7 @@ export default function ResidentManagement() {
                 <SelectContent>
                   <SelectItem value="Male">Male</SelectItem>
                   <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -349,20 +389,8 @@ export default function ResidentManagement() {
                 <SelectContent>
                   <SelectItem value="Single">Single</SelectItem>
                   <SelectItem value="Married">Married</SelectItem>
-                  <SelectItem value="Widow">Widow</SelectItem>
-                  <SelectItem value="Separated">Separated</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="voterStatus">Voter Status</Label>
-              <Select value={formData.voterStatus || ""} onValueChange={(value) => setFormData({ ...formData, voterStatus: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select voter status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Registered Voter">Registered Voter</SelectItem>
-                  <SelectItem value="Not Registered">Not Registered</SelectItem>
+                  <SelectItem value="Widowed">Widowed</SelectItem>
+                  <SelectItem value="Divorced">Divorced</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -371,8 +399,8 @@ export default function ResidentManagement() {
             <Button variant="outline" onClick={() => setShowAddModal(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddResident} className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
-              Add Resident
+            <Button onClick={handleAddResident} className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create Resident"}
             </Button>
           </div>
         </DialogContent>

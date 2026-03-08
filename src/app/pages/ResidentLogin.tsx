@@ -94,21 +94,16 @@ export default function ResidentLogin() {
             </Button>
           </form>
 
-          <div className="mt-8 text-center space-y-3">
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600 mb-4">
+              Contact your barangay administrator for account creation
+            </p>
             <button
-              onClick={() => navigate("/resident/register")}
-              className="text-sm text-green-600 hover:text-green-700"
+              onClick={() => navigate("/")}
+              className="text-sm text-gray-600 hover:text-gray-700"
             >
-              Don't have an account? Register here
+              ← Back to Home
             </button>
-            <div>
-              <button
-                onClick={() => navigate("/")}
-                className="text-sm text-gray-600 hover:text-gray-700"
-              >
-                ← Back to Home
-              </button>
-            </div>
           </div>
         </div>
       </div>

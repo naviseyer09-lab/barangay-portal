@@ -163,6 +163,79 @@ router.get('/residents', authenticateAdmin, (req, res) => {
   });
 });
 
+// Create resident account (admin only)
+router.post('/residents/create', authenticateAdmin, [
+  body('username').isLength({ min: 4 }).withMessage('Username must be at least 4 characters'),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+  body('email').isEmail().withMessage('Please provide a valid email'),
+  body('fullName').notEmpty().withMessage('Full name is required'),
+  body('address').notEmpty().withMessage('Address is required'),
+  body('contactNumber').isMobilePhone().withMessage('Please provide a valid phone number'),
+  body('birthdate').optional().isDate().withMessage('Please provide a valid birthdate'),
+  body('gender').optional().isIn(['Male', 'Female', 'Other']).withMessage('Please select a valid gender'),
+  body('civilStatus').optional().isIn(['Single', 'Married', 'Widowed', 'Divorced']).withMessage('Please select a valid civil status')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { username, password, email, fullName, address, contactNumber, birthdate, gender, civilStatus } = req.body;
+
+    // Check if username or email already exists
+    db.get('SELECT id FROM residents WHERE username = ? OR email = ?',
+      [username, email], async (err, existing) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: 'Database error' });
+      }
+
+      if (existing) {
+        return res.status(409).json({ success: false, message: 'Username or email already exists' });
+      }
+
+      // Hash password
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      // Insert new resident with Active status by default
+      db.run(`INSERT INTO residents (username, password, email, full_name, address, contact_number, birthdate, gender, civil_status, account_status)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [username, hashedPassword, email, fullName, address, contactNumber, birthdate, gender, civilStatus, 'Active'],
+        function(err) {
+          if (err) {
+            return res.status(500).json({ success: false, message: 'Failed to create resident account' });
+          }
+
+          res.status(201).json({
+            success: true,
+            message: 'Resident account created successfully',
+            residentId: this.lastID,
+            resident: {
+              id: this.lastID,
+              username,
+              email,
+              fullName,
+              address,
+              contactNumber,
+              birthdate,
+              gender,
+              civilStatus,
+              accountStatus: 'Active'
+            }
+          });
+        });
+    });
+  } catch (error) {
+    console.error('Create resident error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 // Update resident status
 router.put('/residents/:id/status', authenticateAdmin, [
   body('status').isIn(['Active', 'Inactive']).withMessage('Status must be Active or Inactive')
