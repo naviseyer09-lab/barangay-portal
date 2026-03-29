@@ -1,5 +1,5 @@
 import { Building2 } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 export default function LandingHeader() {
   const navigate = useNavigate();
