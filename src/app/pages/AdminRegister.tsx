@@ -6,6 +6,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { toast } from "sonner";
 import { registerAdmin } from "../../lib/api";
+import { barangayInfo } from "../data/mockData";
 
 export default function AdminRegister() {
   const navigate = useNavigate();
@@ -129,7 +130,7 @@ export default function AdminRegister() {
               <Shield className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Staff Registration</h1>
-            <p className="text-gray-600 text-center mt-2">Barangay San Isidro Management System</p>
+            <p className="text-gray-600 text-center mt-2">{barangayInfo.name} Management System</p>
             <p className="text-sm text-gray-500 text-center mt-1">For authorized barangay staff only</p>
           </div>
 
