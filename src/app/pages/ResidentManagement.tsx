@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { mockResidents, User } from "../data/mockData";
-import { Search, Plus, Edit, Trash2, Key, Filter, Download } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Key, Filter, Download, Check, X } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -18,11 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { createResident, getResidents, updateResidentStatus } from "../../lib/api";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { createResident, getResidents, updateResidentStatus, approveResident, rejectResident } from "../../lib/api";
 import { toast } from "sonner";
 
 export default function ResidentManagement() {
   const [residents, setResidents] = useState<User[]>(mockResidents);
+  const [pendingResidents, setPendingResidents] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterVoter, setFilterVoter] = useState<string>("all");
@@ -30,9 +32,26 @@ export default function ResidentManagement() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [showApprovalDialog, setShowApprovalDialog] = useState(false);
   const [selectedResident, setSelectedResident] = useState<User | null>(null);
+  const [selectedPendingResident, setSelectedPendingResident] = useState<any>(null);
   const [formData, setFormData] = useState<Partial<User> & { password?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Load pending residents on mount
+  useEffect(() => {
+    const loadPendingResidents = async () => {
+      try {
+        const response = await getResidents('pending');
+        setPendingResidents(response.residents || []);
+      } catch (err) {
+        console.error('Failed to load pending residents:', err);
+        setPendingResidents([]);
+      }
+    };
+
+    loadPendingResidents();
+  }, []);
 
   const filteredResidents = residents.filter((resident) => {
     const matchesSearch =
@@ -116,6 +135,40 @@ export default function ResidentManagement() {
     setSelectedResident(null);
   };
 
+  const handleApproveResident = async () => {
+    if (!selectedPendingResident) return;
+    
+    setIsLoading(true);
+    try {
+      await approveResident(selectedPendingResident.id);
+      setPendingResidents(pendingResidents.filter(r => r.id !== selectedPendingResident.id));
+      toast.success(`Resident ${selectedPendingResident.full_name} approved successfully!`);
+      setShowApprovalDialog(false);
+      setSelectedPendingResident(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to approve resident");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRejectResident = async () => {
+    if (!selectedPendingResident) return;
+    
+    setIsLoading(true);
+    try {
+      await rejectResident(selectedPendingResident.id);
+      setPendingResidents(pendingResidents.filter(r => r.id !== selectedPendingResident.id));
+      toast.success(`Resident ${selectedPendingResident.full_name} rejected successfully!`);
+      setShowApprovalDialog(false);
+      setSelectedPendingResident(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reject resident");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const openEditModal = (resident: User) => {
     setSelectedResident(resident);
     setFormData(resident);
@@ -192,7 +245,11 @@ export default function ResidentManagement() {
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+          <p className="text-sm text-gray-600">Pending Approvals</p>
+          <p className="text-2xl font-bold text-amber-600">{pendingResidents.length}</p>
+        </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-600">Total Residents</p>
           <p className="text-2xl font-bold text-gray-900">{residents.length}</p>
@@ -215,8 +272,75 @@ export default function ResidentManagement() {
         </div>
       </div>
 
+      {/* Pending Approvals Section */}
+      {pendingResidents.length > 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-amber-200 overflow-hidden">
+          <div className="bg-amber-50 px-6 py-4 border-b border-amber-200">
+            <h2 className="text-lg font-semibold text-amber-900">Pending Resident Approvals ({pendingResidents.length})</h2>
+            <p className="text-sm text-amber-700 mt-1">Review and approve new resident registrations</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-amber-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase">Address</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase">Contact</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase">Date Applied</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-amber-100">
+                {pendingResidents.map((resident) => (
+                  <tr key={resident.id} className="hover:bg-amber-50">
+                    <td className="px-6 py-4">
+                      <p className="text-sm font-medium text-gray-900">{resident.full_name}</p>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{resident.email}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{resident.address}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{resident.contact_number}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {new Date(resident.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedPendingResident(resident);
+                            setShowApprovalDialog(true);
+                          }}
+                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg" 
+                          title="Approve"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedPendingResident(resident);
+                            handleRejectResident();
+                          }}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          title="Reject"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Residents Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-900">Approved Residents</h2>
+          <p className="text-sm text-gray-600 mt-1">Manage approved resident records</p>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -293,6 +417,37 @@ export default function ResidentManagement() {
           </table>
         </div>
       </div>
+
+      {/* Resident Approval Dialog */}
+      <Dialog open={showApprovalDialog} onOpenChange={setShowApprovalDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Approve Resident Registration</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to approve {selectedPendingResident?.full_name}'s registration? They will be able to login and access the resident portal.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3 mt-6">
+            <Button variant="outline" onClick={() => setShowApprovalDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleApproveResident} 
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Approving...' : 'Approve'}
+            </Button>
+            <Button 
+              onClick={handleRejectResident}
+              variant="destructive"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Rejecting...' : 'Reject'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Resident Modal */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>

@@ -203,6 +203,16 @@ router.post('/resident/login', [
         return res.status(401).json({ success: false, message: 'Invalid username or password' });
       }
 
+      // Check if resident account is approved
+      if (resident.status !== 'approved') {
+        return res.status(403).json({
+          success: false,
+          message: resident.status === 'pending'
+            ? 'Your account is pending approval. Please contact the barangay administrator.'
+            : 'Your account has been rejected. Please contact the barangay administrator.'
+        });
+      }
+
       // Check if resident account is active
       if (resident.account_status !== 'Active') {
         return res.status(403).json({

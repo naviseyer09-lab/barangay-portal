@@ -323,13 +323,13 @@ export const mockAdmins: Admin[] = [
 ];
 
 export const barangayInfo = {
-  name: "Barangay San Isidro",
-  captain: "Hon. Maria Santos",
-  address: "San Isidro, Makati City, Metro Manila, Philippines",
-  contactNumber: "+63 (02) 8123 4567",
-  email: "sanisidro.barangay@gov.ph",
+  name: "Barangay Aduas Norte",
+  captain: "Ivan Lloyd N. Reyes",
+  address: "Nueva Ecija, Cabanatuan City, Aduas Norte, Philippines",
+  contactNumber: "09918177027",
+  email: "aduasnorte.barangay@gov.ph",
   mission: "To provide excellent public service and promote community development through transparent governance, active citizen participation, and sustainable programs that enhance the quality of life of all residents.",
-  vision: "A progressive, peaceful, and united Barangay San Isidro where every resident lives in dignity, prosperity, and harmony.",
+  vision: "A progressive, peaceful, and united Barangay Aduas Norte where every resident lives in dignity, prosperity, and harmony.",
   barangayHours: "Monday - Friday: 8:00 AM - 5:00 PM",
   establishedYear: "1975",
   population: "12,450",

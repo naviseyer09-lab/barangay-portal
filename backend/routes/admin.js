@@ -202,10 +202,10 @@ router.post('/residents/create', authenticateAdmin, [
       const bcrypt = require('bcryptjs');
       const hashedPassword = await bcrypt.hash(password, 12);
 
-      // Insert new resident with Active status by default
-      db.run(`INSERT INTO residents (username, password, email, full_name, address, contact_number, birthdate, gender, civil_status, account_status)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [username, hashedPassword, email, fullName, address, contactNumber, birthdate, gender, civilStatus, 'Active'],
+      // Insert new resident with pending status (requires approval)
+      db.run(`INSERT INTO residents (username, password, email, full_name, address, contact_number, birthdate, gender, civil_status, account_status, status)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [username, hashedPassword, email, fullName, address, contactNumber, birthdate, gender, civilStatus, 'Active', 'pending'],
         function(err) {
           if (err) {
             return res.status(500).json({ success: false, message: 'Failed to create resident account' });
@@ -225,7 +225,8 @@ router.post('/residents/create', authenticateAdmin, [
               birthdate,
               gender,
               civilStatus,
-              accountStatus: 'Active'
+              accountStatus: 'Active',
+              status: 'pending'
             }
           });
         });
@@ -349,6 +350,91 @@ router.put('/service-requests/:id', authenticateAdmin, [
     }
 
     res.json({ success: true, message: `Service request ${status.toLowerCase()} successfully` });
+  });
+});
+
+// Get all residents with optional status filter
+router.get('/residents', authenticateAdmin, (req, res) => {
+  const { status, page = 1, limit = 10 } = req.query;
+  const offset = (page - 1) * limit;
+
+  let query = 'SELECT id, username, email, full_name, address, contact_number, status, created_at FROM residents';
+  let params = [];
+
+  if (status) {
+    query += ' WHERE status = ?';
+    params.push(status);
+  }
+
+  query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+  params.push(limit, offset);
+
+  db.all(query, params, (err, residents) => {
+    if (err) {
+      return res.status(500).json({ success: false, message: 'Database error' });
+    }
+
+    // Get total count
+    let countQuery = 'SELECT COUNT(*) as total FROM residents';
+    let countParams = [];
+
+    if (status) {
+      countQuery += ' WHERE status = ?';
+      countParams.push(status);
+    }
+
+    db.get(countQuery, countParams, (err, result) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: 'Database error' });
+      }
+
+      res.json({
+        success: true,
+        residents: residents,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: result.total,
+          pages: Math.ceil(result.total / limit)
+        }
+      });
+    });
+  });
+});
+
+// Approve resident account
+router.put('/residents/:id/approve', authenticateAdmin, (req, res) => {
+  const { id } = req.params;
+
+  db.run('UPDATE residents SET status = "approved", updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    [id], function(err) {
+    if (err) {
+      return res.status(500).json({ success: false, message: 'Database error' });
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).json({ success: false, message: 'Resident not found' });
+    }
+
+    res.json({ success: true, message: 'Resident account approved successfully' });
+  });
+});
+
+// Reject resident account
+router.put('/residents/:id/reject', authenticateAdmin, (req, res) => {
+  const { id } = req.params;
+
+  db.run('UPDATE residents SET status = "rejected", updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    [id], function(err) {
+    if (err) {
+      return res.status(500).json({ success: false, message: 'Database error' });
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).json({ success: false, message: 'Resident not found' });
+    }
+
+    res.json({ success: true, message: 'Resident account rejected successfully' });
   });
 });
 

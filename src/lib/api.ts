@@ -140,14 +140,34 @@ export async function rejectStaffAccount(id: string) {
   }
 }
 
-export async function getResidents(page = 1, limit = 10, search?: string) {
+export async function getResidents(status?: string, page = 1, limit = 10) {
   try {
     const params = new URLSearchParams();
+    if (status) params.append('status', status);
     params.append('page', page.toString());
     params.append('limit', limit.toString());
-    if (search) params.append('search', search);
 
     return await apiCall(`/admin/residents?${params}`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function approveResident(id: string) {
+  try {
+    return await apiCall(`/admin/residents/${id}/approve`, {
+      method: 'PUT',
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function rejectResident(id: string) {
+  try {
+    return await apiCall(`/admin/residents/${id}/reject`, {
+      method: 'PUT',
+    });
   } catch (error) {
     throw error;
   }

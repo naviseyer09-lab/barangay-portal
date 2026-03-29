@@ -41,19 +41,20 @@ setTimeout(async () => {
     // Create test resident account
     const residentPassword = await bcrypt.hash('resident123', 12);
     db.run(
-      `INSERT OR REPLACE INTO residents (username, password, email, full_name, address, contact_number, birthdate, gender, civil_status, account_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT OR REPLACE INTO residents (username, password, email, full_name, address, contact_number, birthdate, gender, civil_status, account_status, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         'resident',
         residentPassword,
         'resident@barangay.gov.ph',
         'Test Resident',
-        '123 San Isidro Street, Barangay San Isidro',
+        '123 Aduas Norte Street, Barangay Aduas Norte',
         '09987654321',
         '1990-01-15',
         'Male',
         'Single',
-        'Active'
+        'Active',
+        'approved'
       ],
       function(err) {
         if (err) {

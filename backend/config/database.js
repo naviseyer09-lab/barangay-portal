@@ -60,6 +60,7 @@ const initDb = () => {
         civil_status TEXT,
         voter_status TEXT DEFAULT 'Not Registered',
         account_status TEXT DEFAULT 'Active',
+        status TEXT DEFAULT 'pending',
         profile_picture TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP

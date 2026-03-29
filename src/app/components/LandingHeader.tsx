@@ -21,7 +21,7 @@ export default function LandingHeader() {
               <Building2 className="w-6 h-6 text-white" />
             </div>
             <div>
-              <div className="font-semibold text-gray-900">Barangay San Isidro</div>
+              <div className="font-semibold text-gray-900">Barangay Aduas Norte</div>
               <div className="text-xs text-gray-600">Official Portal</div>
             </div>
           </div>
