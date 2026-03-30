@@ -5,7 +5,7 @@ import {
   IsOptional,
   IsMobilePhone,
   IsIn,
-  IsDateString
+  IsDateString,
 } from 'class-validator';
 
 export class ResidentRegisterDto {
