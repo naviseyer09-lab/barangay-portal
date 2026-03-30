@@ -1,0 +1,6 @@
+backend-old/**
+config/**
+scripts/**
+server.js
+node_modules/**
+**/database.sqlite
