@@ -1,0 +1,5 @@
+backend-old/**
+backend/config/**
+backend/scripts/**
+backend/node_modules/**
+**/database.sqlite
