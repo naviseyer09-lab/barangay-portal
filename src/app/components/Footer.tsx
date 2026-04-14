@@ -37,7 +37,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Mail className="w-4 h-4 flex-shrink-0" />
-                <span className="text-white/80">{barangayInfo.email}</span>
+                <span className="text-white/80">{barangayInfo?.email || 'Email'}</span>
               </div>
             </div>
           </div>
@@ -75,7 +75,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 mt-8 pt-8 text-center text-sm text-white/60">
-          <p>&copy; {new Date().getFullYear()} {barangayInfo.name}. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {barangayInfo?.name || 'Barangay'}. All rights reserved.</p>
         </div>
       </div>
     </footer>
