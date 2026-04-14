@@ -6,8 +6,7 @@
   "description": "Official Barangay Aduas Norte Management System Portal",
   "scripts": {
     "dev": "vite",
-    "build": "node node_modules/vite/bin/vite.js build",
-    "postinstall": "chmod +x node_modules/.bin/vite"
+    "build": "node node_modules/vite/bin/vite.js build"
   },
   "dependencies": {
     "react": "18.3.1",
@@ -64,6 +63,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.1.12",
+    "@types/node": "^22.10.0",
     "@vitejs/plugin-react": "4.7.0",
     "tailwindcss": "4.1.12",
     "vite": "6.3.5"
