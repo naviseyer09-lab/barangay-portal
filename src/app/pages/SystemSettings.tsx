@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { barangayInfo } from "../data/mockData";
+import { useState, useEffect } from "react";
+import { useBarangay } from "../components/BarangayContext";
 import { Save, Building2, Mail, Phone, MapPin, Clock, Users } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -7,8 +7,15 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 
 export default function SystemSettings() {
-  const [formData, setFormData] = useState(barangayInfo);
+  const { barangayInfo } = useBarangay();
+  const [formData, setFormData] = useState(barangayInfo || {});
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (barangayInfo) {
+      setFormData(barangayInfo);
+    }
+  }, [barangayInfo]);
 
   const handleSave = () => {
     setIsSaving(true);
@@ -20,7 +27,9 @@ export default function SystemSettings() {
   };
 
   const handleReset = () => {
-    setFormData(barangayInfo);
+    if (barangayInfo) {
+      setFormData(barangayInfo);
+    }
   };
 
   return (
