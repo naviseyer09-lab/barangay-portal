@@ -83,3 +83,41 @@ export class UpdateResidentProfileDto {
   @IsIn(['Single', 'Married', 'Widowed', 'Divorced'])
   civilStatus?: string;
 }
+
+export class AdminUpdateResidentDto {
+  @IsOptional()
+  @IsNotEmpty()
+  fullName?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  address?: string;
+
+  @IsOptional()
+  @IsMobilePhone()
+  contactNumber?: string;
+
+  @IsOptional()
+  @IsDateString()
+  birthdate?: string;
+
+  @IsOptional()
+  @IsIn(['Male', 'Female', 'Other'])
+  gender?: string;
+
+  @IsOptional()
+  @IsIn(['Single', 'Married', 'Widowed', 'Divorced'])
+  civilStatus?: string;
+
+  @IsOptional()
+  @IsIn(['Registered Voter', 'Not Registered'])
+  voterStatus?: string;
+
+  @IsOptional()
+  @IsIn(['Active', 'Inactive'])
+  accountStatus?: string;
+}

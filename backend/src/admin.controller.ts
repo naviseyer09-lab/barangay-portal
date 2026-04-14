@@ -1,5 +1,6 @@
-import { Controller, Get, Put, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Post, Body, Param, Query, ValidationPipe } from '@nestjs/common';
 import { AdminService } from './admin.service';
+import { CreateResidentDto, AdminUpdateResidentDto } from './dto/resident.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -32,6 +33,19 @@ export class AdminController {
     @Query('search') search?: string,
   ) {
     return this.adminService.getResidents(status, +page, +limit, search);
+  }
+
+  @Post('residents')
+  async createResident(@Body(ValidationPipe) data: CreateResidentDto) {
+    return this.adminService.createResident(data);
+  }
+
+  @Put('residents/:id')
+  async updateResident(
+    @Param('id') id: string,
+    @Body(ValidationPipe) data: AdminUpdateResidentDto,
+  ) {
+    return this.adminService.updateResident(+id, data);
   }
 
   @Put('residents/:id/approve')

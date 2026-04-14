@@ -19,8 +19,24 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { createResident, getResidents, updateResidentStatus, approveResident, rejectResident } from "../../lib/api";
+import { createResident, getResidents, updateResident, updateResidentStatus, approveResident, rejectResident } from "../../lib/api";
 import { toast } from "sonner";
+
+function normalizeResident(resident: any): User {
+  return {
+    id: String(resident.id),
+    username: resident.username ?? "",
+    fullName: resident.full_name ?? resident.fullName ?? "",
+    address: resident.address ?? "",
+    contactNumber: resident.contact_number ?? resident.contactNumber ?? "",
+    voterStatus: resident.voter_status ?? resident.voterStatus ?? "Not Registered",
+    accountStatus: (resident.account_status ?? resident.accountStatus ?? "Active") as "Active" | "Inactive",
+    birthdate: resident.birthdate ?? "",
+    gender: resident.gender ?? "",
+    civilStatus: resident.civil_status ?? resident.civilStatus ?? "",
+    email: resident.email ?? "",
+  };
+}
 
 export default function ResidentManagement() {
   const [residents, setResidents] = useState<User[]>(mockResidents);
@@ -38,18 +54,29 @@ export default function ResidentManagement() {
   const [formData, setFormData] = useState<Partial<User> & { password?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load pending residents on mount
-  useEffect(() => {
-    const loadPendingResidents = async () => {
-      try {
-        const response = await getResidents('pending');
-        setPendingResidents(response.residents || []);
-      } catch (err) {
-        console.error('Failed to load pending residents:', err);
-        setPendingResidents([]);
-      }
-    };
+  const loadResidents = async () => {
+    try {
+      const response = await getResidents('approved');
+      const fetchedResidents = (response.data || []).map(normalizeResident);
+      setResidents(fetchedResidents);
+    } catch (err) {
+      console.error('Failed to load approved residents:', err);
+      setResidents(mockResidents);
+    }
+  };
 
+  const loadPendingResidents = async () => {
+    try {
+      const response = await getResidents('pending');
+      setPendingResidents(response.data || []);
+    } catch (err) {
+      console.error('Failed to load pending residents:', err);
+      setPendingResidents([]);
+    }
+  };
+
+  useEffect(() => {
+    loadResidents();
     loadPendingResidents();
   }, []);
 
@@ -73,7 +100,7 @@ export default function ResidentManagement() {
 
     setIsLoading(true);
     try {
-      const response = await createResident({
+      await createResident({
         username: formData.username,
         password: formData.password,
         email: formData.email,
@@ -85,21 +112,7 @@ export default function ResidentManagement() {
         civilStatus: formData.civilStatus,
       });
 
-      const newResident: User = {
-        id: String(response.residentId),
-        username: formData.username || "",
-        fullName: formData.fullName || "",
-        address: formData.address || "",
-        contactNumber: formData.contactNumber || "",
-        voterStatus: "Not Registered",
-        accountStatus: "Active",
-        birthdate: formData.birthdate,
-        gender: formData.gender,
-        civilStatus: formData.civilStatus,
-        email: formData.email,
-      };
-
-      setResidents([...residents, newResident]);
+      await loadResidents();
       toast.success(`Resident ${formData.fullName} created successfully!`);
       setShowAddModal(false);
       setFormData({});
@@ -110,16 +123,37 @@ export default function ResidentManagement() {
     }
   };
 
-  const handleEditResident = () => {
+  const handleEditResident = async () => {
     if (!selectedResident) return;
-    setResidents(
-      residents.map((r) =>
-        r.id === selectedResident.id ? { ...r, ...formData } : r
-      )
-    );
-    setShowEditModal(false);
-    setFormData({});
-    setSelectedResident(null);
+
+    setIsLoading(true);
+    try {
+      await updateResident(selectedResident.id, {
+        fullName: formData.fullName,
+        email: formData.email,
+        address: formData.address,
+        contactNumber: formData.contactNumber,
+        voterStatus: formData.voterStatus,
+        accountStatus: formData.accountStatus,
+        birthdate: formData.birthdate,
+        gender: formData.gender,
+        civilStatus: formData.civilStatus,
+      });
+
+      setResidents(
+        residents.map((r) =>
+          r.id === selectedResident.id ? { ...r, ...formData } : r
+        )
+      );
+      toast.success(`Resident ${formData.fullName || selectedResident.fullName} updated successfully!`);
+      setShowEditModal(false);
+      setFormData({});
+      setSelectedResident(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update resident");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDeleteResident = () => {

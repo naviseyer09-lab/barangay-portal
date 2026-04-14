@@ -211,6 +211,17 @@ export async function updateResidentStatus(id: string, status: 'Active' | 'Inact
   }
 }
 
+export async function updateResident(id: string, data: any) {
+  try {
+    return await apiCall(`/admin/residents/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function createResident(data: {
   username: string;
   password: string;
@@ -223,7 +234,7 @@ export async function createResident(data: {
   civilStatus?: string;
 }) {
   try {
-    return await apiCall('/admin/residents/create', {
+    return await apiCall('/admin/residents', {
       method: 'POST',
       body: JSON.stringify(data),
     });
