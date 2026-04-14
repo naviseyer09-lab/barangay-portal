@@ -19,6 +19,33 @@ db.run('PRAGMA foreign_keys = ON');
 // Database initialization
 const initDb = () => {
   return new Promise((resolve, reject) => {
+    // Create barangay_info table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS barangay_info (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        captain TEXT NOT NULL,
+        address TEXT NOT NULL,
+        contact_number TEXT NOT NULL,
+        email TEXT NOT NULL,
+        mission TEXT,
+        vision TEXT,
+        barangay_hours TEXT,
+        established_year TEXT,
+        population TEXT,
+        total_area TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `, (err) => {
+      if (err) {
+        console.error('Error creating barangay_info table:', err.message);
+        reject(err);
+        return;
+      }
+      console.log('Barangay info table ready.');
+    });
+
     // Create admins table
     db.run(`
       CREATE TABLE IF NOT EXISTS admins (
@@ -189,7 +216,30 @@ const initDb = () => {
       Promise.all(defaultServices.map(insertService))
         .then(() => {
           console.log('Default services inserted.');
-          resolve();
+          // Insert default barangay info
+          db.run(`
+            INSERT OR IGNORE INTO barangay_info (name, captain, address, contact_number, email, mission, vision, barangay_hours, established_year, population, total_area)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `, [
+            'Barangay Aduas Norte',
+            'Ivan Lloyd N. Reyes',
+            'Nueva Ecija, Cabanatuan City, Aduas Norte, Philippines',
+            '09918177027',
+            'aduasnorte.barangay@gov.ph',
+            'To provide excellent public service and promote community development through transparent governance, active citizen participation, and sustainable programs that enhance the quality of life of all residents.',
+            'A progressive, peaceful, and united Barangay Aduas Norte where every resident lives in dignity, prosperity, and harmony.',
+            'Monday - Friday: 8:00 AM - 5:00 PM',
+            '1975',
+            '12,450',
+            '2.5 sq km'
+          ], function(err) {
+            if (err) {
+              console.error('Error inserting default barangay info:', err.message);
+            } else {
+              console.log('Default barangay info inserted.');
+            }
+            resolve();
+          });
         })
         .catch(reject);
     }, 100);

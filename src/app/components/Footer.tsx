@@ -1,7 +1,8 @@
 import { Building2, Phone, Mail, Facebook, Twitter, Instagram } from "lucide-react";
-import { barangayInfo } from "../data/mockData";
+import { useBarangay } from "./BarangayContext";
 
 export default function Footer() {
+  const { barangayInfo } = useBarangay();
   return (
     <footer className="bg-gradient-to-br from-blue-900 to-green-800 text-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,7 +14,7 @@ export default function Footer() {
                 <Building2 className="w-7 h-7" />
               </div>
               <div>
-                <div className="font-semibold text-lg">{barangayInfo.name}</div>
+                <div className="font-semibold text-lg">{barangayInfo?.name || 'Barangay'}</div>
                 <div className="text-sm text-white/80">Official Portal</div>
               </div>
             </div>
@@ -28,11 +29,11 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-start gap-2 text-sm">
                 <Building2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span className="text-white/80">{barangayInfo.address}</span>
+                <span className="text-white/80">{barangayInfo?.address || 'Address'}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Phone className="w-4 h-4 flex-shrink-0" />
-                <span className="text-white/80">{barangayInfo.contactNumber}</span>
+                <span className="text-white/80">{barangayInfo?.contactNumber || 'Contact'}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Mail className="w-4 h-4 flex-shrink-0" />

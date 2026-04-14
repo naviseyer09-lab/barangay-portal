@@ -9,4 +9,9 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('barangay-info')
+  getBarangayInfo() {
+    return this.appService.getBarangayInfo();
+  }
 }

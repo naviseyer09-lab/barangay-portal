@@ -1,7 +1,8 @@
 import { FileText, Home, Heart, Briefcase, Syringe, Building2, User, Target } from "lucide-react";
 import LandingHeader from "../components/LandingHeader";
 import Footer from "../components/Footer";
-import { barangayInfo, mockAnnouncements } from "../data/mockData";
+import { mockAnnouncements } from "../data/mockData";
+import { useBarangay } from "../components/BarangayContext";
 import { useNavigate } from "react-router";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 
@@ -15,6 +16,7 @@ const serviceIcons = {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { barangayInfo, loading: barangayLoading } = useBarangay();
 
   const services = [
     { icon: "FileText", name: "Barangay Clearance", description: "Certificate of Residency for various purposes" },
@@ -43,7 +45,7 @@ export default function Landing() {
               <Building2 className="w-14 h-14" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-center mb-4">
-              Welcome to {barangayInfo.name}
+              Welcome to {barangayLoading ? 'Loading...' : barangayInfo?.name || 'Barangay'}
             </h1>
             <p className="text-xl text-center mb-8 text-white/90">Official Portal</p>
             <button
@@ -68,23 +70,23 @@ export default function Landing() {
               <div className="space-y-4">
                 <div>
                   <div className="text-sm text-gray-600">Barangay Name</div>
-                  <div className="font-semibold text-gray-900">{barangayInfo.name}</div>
+                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : barangayInfo?.name || 'Barangay Name'}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Barangay Captain</div>
-                  <div className="font-semibold text-gray-900">{barangayInfo.captain}</div>
+                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : barangayInfo?.captain || 'Captain Name'}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Address</div>
-                  <div className="font-semibold text-gray-900">{barangayInfo.address}</div>
+                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : barangayInfo?.address || 'Address'}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Contact Number</div>
-                  <div className="font-semibold text-gray-900">{barangayInfo.contactNumber}</div>
+                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : barangayInfo?.contactNumber || 'Contact'}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Email</div>
-                  <div className="font-semibold text-gray-900">{barangayInfo.email}</div>
+                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : barangayInfo?.email || 'Email'}</div>
                 </div>
               </div>
             </div>
@@ -98,7 +100,7 @@ export default function Landing() {
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900">Mission</h3>
                 </div>
-                <p className="text-gray-700 leading-relaxed">{barangayInfo.mission}</p>
+                <p className="text-gray-700 leading-relaxed">{barangayLoading ? 'Loading...' : barangayInfo?.mission || 'Mission statement'}</p>
               </div>
 
               <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
@@ -108,7 +110,7 @@ export default function Landing() {
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900">Vision</h3>
                 </div>
-                <p className="text-gray-700 leading-relaxed">{barangayInfo.vision}</p>
+                <p className="text-gray-700 leading-relaxed">{barangayLoading ? 'Loading...' : barangayInfo?.vision || 'Vision statement'}</p>
               </div>
             </div>
           </div>

@@ -6,10 +6,12 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { loginResident } from "../../lib/api";
 import { setAuthToken } from "../../lib/auth";
+import { useBarangay } from "../components/BarangayContext";
 import { toast } from "sonner";
 
 export default function ResidentLogin() {
   const navigate = useNavigate();
+  const { barangayInfo } = useBarangay();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -43,7 +45,9 @@ export default function ResidentLogin() {
               <Home className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Resident Portal</h1>
-            <p className="text-gray-600 text-center mt-2">Barangay San Isidro Resident Services</p>
+            <p className="text-gray-600 text-center mt-2">
+              {barangayInfo?.name || 'Barangay'} Resident Services
+            </p>
           </div>
 
           {error && (

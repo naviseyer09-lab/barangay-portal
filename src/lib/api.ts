@@ -79,7 +79,15 @@ export async function registerAdmin(data: {
   }
 }
 
-// Resident Authentication Functions
+// Get barangay information
+export async function getBarangayInfo() {
+  try {
+    const response = await apiCall('barangay-info');
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
 export async function loginResident(username: string, password: string) {
   try {
     const response = await apiCall('/auth/resident/login', {
