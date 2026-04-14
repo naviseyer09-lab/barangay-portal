@@ -18,10 +18,17 @@ async function apiCall(endpoint: string, options: RequestInit = {}) {
     headers,
   });
 
-  const data = await response.json();
+  const text = await response.text();
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = null;
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || `API call failed: ${response.statusText}`);
+    const message = data?.message || data?.error || response.statusText || 'API call failed';
+    throw new Error(message);
   }
 
   return data;

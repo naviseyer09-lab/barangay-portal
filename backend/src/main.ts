@@ -5,15 +5,31 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Global API prefix
+  app.setGlobalPrefix('api');
+
   // CORS
+  const isProduction = process.env.NODE_ENV === 'production';
+  const allowedOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
+    : [
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:5174',
+        'https://barangay-portal-hazel.vercel.app',
+      ];
+
   app.enableCors({
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:5174',
-      'https://barangay-portal-hazel.vercel.app'
-    ],
+    origin: isProduction
+      ? (origin, callback) => {
+          if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error(`Origin ${origin} not allowed by CORS`));
+          }
+        }
+      : true,
     credentials: true,
   });
 
