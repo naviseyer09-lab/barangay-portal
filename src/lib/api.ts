@@ -1,7 +1,7 @@
 // API service for barangay portal
 // Connects to the backend API
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? `${window.location.origin}/api` : 'http://localhost:5000/api');
 
 // Helper function for API calls
 async function apiCall(endpoint: string, options: RequestInit = {}) {
@@ -13,10 +13,15 @@ async function apiCall(endpoint: string, options: RequestInit = {}) {
     ...options.headers,
   };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch (error: any) {
+    throw new Error(`Unable to reach backend API at ${API_BASE_URL}${endpoint}: ${error?.message || 'Network error'}`);
+  }
 
   const text = await response.text();
   let data: any = null;
