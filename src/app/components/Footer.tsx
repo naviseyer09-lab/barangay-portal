@@ -1,8 +1,16 @@
 import { Building2, Phone, Mail, Facebook, Twitter, Instagram } from "lucide-react";
 import { useBarangay } from "./BarangayContext";
 
+const defaultFooterInfo = {
+  name: "Barangay Aduas Norte",
+  address: "Nueva Ecija, Cabanatuan City, Aduas Norte, Philippines",
+  contactNumber: "09918177027",
+  email: "aduasnorte.barangay@gov.ph",
+};
+
 export default function Footer() {
   const { barangayInfo } = useBarangay();
+  const info = barangayInfo ?? defaultFooterInfo;
   return (
     <footer className="bg-gradient-to-br from-blue-900 to-green-800 text-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,7 +22,7 @@ export default function Footer() {
                 <Building2 className="w-7 h-7" />
               </div>
               <div>
-                <div className="font-semibold text-lg">{barangayInfo?.name || 'Barangay'}</div>
+                <div className="font-semibold text-lg">{info.name}</div>
                 <div className="text-sm text-white/80">Official Portal</div>
               </div>
             </div>
@@ -29,15 +37,15 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-start gap-2 text-sm">
                 <Building2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span className="text-white/80">{barangayInfo?.address || 'Address'}</span>
+                <span className="text-white/80">{info.address}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Phone className="w-4 h-4 flex-shrink-0" />
-                <span className="text-white/80">{barangayInfo?.contactNumber || 'Contact'}</span>
+                <span className="text-white/80">{info.contactNumber}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Mail className="w-4 h-4 flex-shrink-0" />
-                <span className="text-white/80">{barangayInfo?.email || 'Email'}</span>
+                <span className="text-white/80">{info.email}</span>
               </div>
             </div>
           </div>
@@ -75,7 +83,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 mt-8 pt-8 text-center text-sm text-white/60">
-          <p>&copy; {new Date().getFullYear()} {barangayInfo?.name || 'Barangay'}. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {info.name}. All rights reserved.</p>
         </div>
       </div>
     </footer>
