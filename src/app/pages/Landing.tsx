@@ -6,6 +6,18 @@ import { useBarangay } from "../components/BarangayContext";
 import { useNavigate } from "react-router";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 
+const defaultBarangayInfo = {
+  name: "Barangay Aduas Norte",
+  captain: "Ivan Lloyd N. Reyes",
+  address: "Nueva Ecija, Cabanatuan City, Aduas Norte, Philippines",
+  contactNumber: "09918177027",
+  email: "aduasnorte.barangay@gov.ph",
+  mission:
+    "To provide excellent public service and promote community development through transparent governance, active citizen participation, and sustainable programs that enhance the quality of life of all residents.",
+  vision:
+    "A progressive, peaceful, and united Barangay Aduas Norte where every resident lives in dignity, prosperity, and harmony.",
+};
+
 const serviceIcons = {
   FileText,
   Home,
@@ -17,6 +29,7 @@ const serviceIcons = {
 export default function Landing() {
   const navigate = useNavigate();
   const { barangayInfo, loading: barangayLoading } = useBarangay();
+  const info = barangayInfo ?? defaultBarangayInfo;
 
   const services = [
     { icon: "FileText", name: "Barangay Clearance", description: "Certificate of Residency for various purposes" },
@@ -45,7 +58,7 @@ export default function Landing() {
               <Building2 className="w-14 h-14" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-center mb-4">
-              Welcome to {barangayLoading ? 'Loading...' : barangayInfo?.name || 'Barangay'}
+              Welcome to {barangayLoading ? 'Loading...' : info.name}
             </h1>
             <p className="text-xl text-center mb-8 text-white/90">Official Portal</p>
             <button
@@ -70,23 +83,23 @@ export default function Landing() {
               <div className="space-y-4">
                 <div>
                   <div className="text-sm text-gray-600">Barangay Name</div>
-                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : barangayInfo?.name || 'Barangay Name'}</div>
+                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : info.name}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Barangay Captain</div>
-                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : barangayInfo?.captain || 'Captain Name'}</div>
+                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : info.captain}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Address</div>
-                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : barangayInfo?.address || 'Address'}</div>
+                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : info.address}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Contact Number</div>
-                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : barangayInfo?.contactNumber || 'Contact'}</div>
+                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : info.contactNumber}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Email</div>
-                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : barangayInfo?.email || 'Email'}</div>
+                  <div className="font-semibold text-gray-900">{barangayLoading ? 'Loading...' : info.email}</div>
                 </div>
               </div>
             </div>
@@ -100,7 +113,7 @@ export default function Landing() {
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900">Mission</h3>
                 </div>
-                <p className="text-gray-700 leading-relaxed">{barangayLoading ? 'Loading...' : barangayInfo?.mission || 'Mission statement'}</p>
+                <p className="text-gray-700 leading-relaxed">{barangayLoading ? 'Loading...' : info.mission}</p>
               </div>
 
               <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
@@ -110,7 +123,7 @@ export default function Landing() {
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900">Vision</h3>
                 </div>
-                <p className="text-gray-700 leading-relaxed">{barangayLoading ? 'Loading...' : barangayInfo?.vision || 'Vision statement'}</p>
+                <p className="text-gray-700 leading-relaxed">{barangayLoading ? 'Loading...' : info.vision}</p>
               </div>
             </div>
           </div>
