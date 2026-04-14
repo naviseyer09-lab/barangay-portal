@@ -3,6 +3,12 @@
 
 const API_BASE_URL = import.meta.env.PROD ? '/api' : import.meta.env.VITE_API_URL || '/api';
 
+function buildApiUrl(endpoint: string) {
+  const base = API_BASE_URL.replace(/\/+$/, '');
+  const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return `${base}${path}`;
+}
+
 // Helper function for API calls
 async function apiCall(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem('authToken');
@@ -15,7 +21,7 @@ async function apiCall(endpoint: string, options: RequestInit = {}) {
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    response = await fetch(buildApiUrl(endpoint), {
       ...options,
       headers,
     });
@@ -82,7 +88,7 @@ export async function registerAdmin(data: {
 // Get barangay information
 export async function getBarangayInfo() {
   try {
-    const response = await apiCall('barangay-info');
+    const response = await apiCall('/barangay-info');
     return response;
   } catch (error) {
     throw error;
