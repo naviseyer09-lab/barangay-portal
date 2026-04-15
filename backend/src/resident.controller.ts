@@ -1,8 +1,10 @@
-import { Controller, Get, Put, Post, Body, Query, Req } from '@nestjs/common';
+import { Controller, Get, Put, Post, Body, Query, Req, UseGuards } from '@nestjs/common';
 import { ResidentService } from './resident.service';
 import { UpdateResidentProfileDto } from './dto/resident.dto';
+import { ResidentGuard } from './auth/resident.guard';
 
 @Controller('resident')
+@UseGuards(ResidentGuard)
 export class ResidentController {
   constructor(private readonly residentService: ResidentService) {}
 
