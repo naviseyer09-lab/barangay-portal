@@ -4,3 +4,5 @@ backend-old/
 dist/
 .env
 *.sqlite
+.vercel
+.env*.local
