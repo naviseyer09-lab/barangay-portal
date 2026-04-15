@@ -6,6 +6,8 @@
   "description": "Official Barangay Aduas Norte Management System Portal",
   "scripts": {
     "dev": "vite",
+    "backend": "cd backend && npm run start",
+    "backend:dev": "cd backend && npm run start:dev",
     "build": "node node_modules/vite/bin/vite.js build"
   },
   "dependencies": {

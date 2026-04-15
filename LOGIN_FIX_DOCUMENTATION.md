@@ -71,14 +71,19 @@
 ### Development Setup
 
 ```bash
-# Terminal 1: Start Backend
-cd backend
-npm start
+# Terminal 1: Start Backend from the project root
+npm run backend
 # Runs on <http://localhost:5000>
 
 # Terminal 2: Start Frontend
 npm run dev
 # Runs on <http://localhost:5173> or <http://localhost:5174>
+```
+
+If you want backend auto-reload during development, use:
+
+```bash
+npm run backend:dev
 ```
 
 ### Initialize Fresh Database
