@@ -2,10 +2,11 @@
 // Connects to the backend API
 
 const VITE_API_URL = import.meta.env.VITE_API_URL?.trim();
+const DEFAULT_PROD_API_URL = 'https://barangay-portal-hazel.vercel.app/api';
 const API_BASE_URL = VITE_API_URL
   ? VITE_API_URL.replace(/\/+$/, '')
   : import.meta.env.PROD
-  ? '/api'
+  ? DEFAULT_PROD_API_URL
   : typeof window !== 'undefined'
   ? `${window.location.origin.replace(/\/+$/, '')}/api`
   : '/api';
