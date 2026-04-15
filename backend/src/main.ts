@@ -18,19 +18,27 @@ async function bootstrap() {
         'http://127.0.0.1:5173',
         'http://127.0.0.1:5174',
         'https://barangay-portal-hazel.vercel.app',
+        // Add your production frontend URL here when deployed
+        // 'https://your-frontend-domain.vercel.app',
       ];
 
   app.enableCors({
     origin: isProduction
       ? (origin, callback) => {
-          if (!origin || allowedOrigins.includes(origin)) {
+          // Allow requests with no origin (mobile apps, etc.)
+          if (!origin) return callback(null, true);
+
+          if (allowedOrigins.includes(origin)) {
             callback(null, true);
           } else {
+            console.warn(`CORS blocked origin: ${origin}`);
             callback(new Error(`Origin ${origin} not allowed by CORS`));
           }
         }
-      : true,
+      : true, // Allow all origins in development
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   // Global validation pipe
