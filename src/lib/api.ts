@@ -1,15 +1,18 @@
 // API service for barangay portal
 // Connects to the backend API
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ||
-  (import.meta.env.PROD
-    ? '/api'
-    : (typeof window !== 'undefined' ? `${window.location.origin}/api` : '/api'));
+const VITE_API_URL = import.meta.env.VITE_API_URL?.trim();
+const API_BASE_URL = VITE_API_URL
+  ? VITE_API_URL.replace(/\/+$/, '')
+  : import.meta.env.PROD
+  ? '/api'
+  : typeof window !== 'undefined'
+  ? `${window.location.origin.replace(/\/+$/, '')}/api`
+  : '/api';
 
 function buildApiUrl(endpoint: string) {
-  const base = API_BASE_URL.replace(/\/+$/, '');
   const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  return `${base}${path}`;
+  return `${API_BASE_URL}${path}`;
 }
 
 // Helper function for API calls
